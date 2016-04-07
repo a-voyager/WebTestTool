@@ -35,9 +35,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             switch (msg.what) {
                 case CONN_FAILED:
                     Snackbar.make((View) findViewById(R.id.ctl_main), "访问出错!", Snackbar.LENGTH_SHORT).show();
+                    tv_result.setText("暂无返回数据");
                     break;
                 case ERROR_CODE:
                     Snackbar.make((View) findViewById(R.id.ctl_main), "访问失败! 响应码: " + msg.arg1, Snackbar.LENGTH_SHORT).show();
+                    tv_result.setText("暂无返回数据");
                     break;
                 case CONN_SUCCEED:
                     tv_result.setText(result);
@@ -63,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void initVariables() {
         pd = new ProgressDialog(this);
         pd.setMessage("请稍候...");
+        pd.setCancelable(false);
     }
 
 
@@ -82,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             case R.id.btn_conn:
                 final String addr = et_url_address.getText().toString().trim();
-                if (addr.isEmpty() || !addr.startsWith("http")) {
+                if (addr.isEmpty() || !addr.matches("[a-zA-z]+://[^\\s]*")) {
                     Snackbar.make((View) findViewById(R.id.ctl_main), "URL地址不合法", Snackbar.LENGTH_SHORT).show();
                     return;
                 }
@@ -96,6 +99,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             URL url = new URL(addr);
                             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                             urlConnection.setRequestMethod(methord);
+                            urlConnection.setConnectTimeout(5000);
+                            urlConnection.setReadTimeout(5000);
                             urlConnection.connect();
                             int responseCode = urlConnection.getResponseCode();
                             if (responseCode == 200) {
